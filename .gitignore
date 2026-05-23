@@ -20,8 +20,14 @@ firestore-debug.log
 ui-debug.log
 firebase-debug.*.log
 
-# Firebase emulator data
+# Firebase leftover config
+.firebaserc
+firebase.json
+firestore.rules
 emulator-data/
+
+# Claude Code local settings
+.claude/
 
 # Editor
 .vscode/
