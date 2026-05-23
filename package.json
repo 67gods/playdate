@@ -6,7 +6,7 @@
   "scripts": {
     "emulators": "firebase emulators:start --project demo-playdate --import=./emulator-data --export-on-exit=./emulator-data",
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "npx tsc && npx vite build",
     "preview": "vite preview"
   },
   "dependencies": {
