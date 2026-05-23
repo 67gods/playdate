@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+
+# AWS SAM
+.aws-sam/
+
+# Local env files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+firebase-debug.log
+firestore-debug.log
+ui-debug.log
+firebase-debug.*.log
+
+# Firebase emulator data
+emulator-data/
+
+# Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS
+.DS_Store
+Thumbs.db
+
+# TypeScript cache
+*.tsbuildinfo
