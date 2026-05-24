@@ -24,7 +24,7 @@ export interface Playdate {
   recipientColor: string;
   recipientEmoji: string;
   date: string;        // YYYY-MM-DD
-  timeSlot: string;   // HH:MM (24-hour)
+  timeSlots: string[]; // sorted HH:MM (24-hour) slots, each 15 min
   type: 'playdate' | 'meeting';
   status: PlaydateStatus;
   parentApprovalNeeded: boolean;

@@ -54,6 +54,18 @@ export function addMinutes(slot: string, minutes: number): string {
   return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
 }
 
+export function formatSlotRange(slots: string[]): string {
+  if (!slots.length) return '';
+  const sorted = [...slots].sort();
+  const start  = sorted[0];
+  const end    = addMinutes(sorted[sorted.length - 1], 15);
+  return `${formatTime(start)}–${formatTime(end)}`;
+}
+
+export function slotDurationMinutes(slots: string[]): number {
+  return slots.length * 15;
+}
+
 /** Returns the Day key for a JS Date (Mon–Sun). */
 export function dateToDayKey(date: Date): Day {
   const js = date.getDay(); // 0=Sun

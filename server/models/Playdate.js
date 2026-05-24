@@ -10,7 +10,7 @@ const playdateSchema = new mongoose.Schema({
   recipientColor:       { type: String, required: true },
   recipientEmoji:       { type: String, required: true },
   date:                 { type: String, required: true },
-  timeSlot:             { type: String, required: true },
+  timeSlots:            { type: [String], required: true, validate: (v) => Array.isArray(v) && v.length > 0 },
   type:                 { type: String, enum: ['playdate', 'meeting'], required: true },
   status:               { type: String, enum: ['pending', 'confirmed', 'declined'], default: 'pending' },
   parentApprovalNeeded: { type: Boolean, default: false },

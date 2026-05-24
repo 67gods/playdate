@@ -16,7 +16,7 @@ function serializePlaydate(pd) {
     recipientColor:       pd.recipientColor,
     recipientEmoji:       pd.recipientEmoji,
     date:                 pd.date,
-    timeSlot:             pd.timeSlot,
+    timeSlots:            pd.timeSlots,
     type:                 pd.type,
     status:               pd.status,
     parentApprovalNeeded: pd.parentApprovalNeeded,
@@ -42,9 +42,9 @@ router.get('/', async (req, res) => {
 // POST /api/playdates
 router.post('/', async (req, res) => {
   try {
-    const { recipientId, date, timeSlot, type, message } = req.body;
-    if (!recipientId || !date || !timeSlot || !type) {
-      return res.status(400).json({ error: 'recipientId, date, timeSlot, type required' });
+    const { recipientId, date, timeSlots, type, message } = req.body;
+    if (!recipientId || !date || !Array.isArray(timeSlots) || !timeSlots.length || !type) {
+      return res.status(400).json({ error: 'recipientId, date, timeSlots (non-empty array), type required' });
     }
 
     const [requester, recipient] = await Promise.all([
@@ -63,7 +63,7 @@ router.post('/', async (req, res) => {
       recipientColor:       recipient.color,
       recipientEmoji:       recipient.emoji,
       date,
-      timeSlot,
+      timeSlots: [...timeSlots].sort(),
       type,
       status:               'pending',
       parentApprovalNeeded: requester.parentModeEnabled,

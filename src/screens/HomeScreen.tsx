@@ -1,5 +1,5 @@
 import type { Friend, Playdate, SuggestionBlock, UserProfile } from '../types';
-import { formatTime } from '../constants';
+import { ALL_TIME_SLOTS, formatTime, formatSlotRange } from '../constants';
 import { computeSuggestions, friendlyDate } from '../lib/suggestions';
 
 interface Props {
@@ -7,7 +7,7 @@ interface Props {
   friends: Friend[];
   playdates: Playdate[];
   navigate: (s: 'availability' | 'friends' | 'requests') => void;
-  onRequestPlaydate: (friend: Friend, prefill?: { date: string; timeSlot: string }) => void;
+  onRequestPlaydate: (friend: Friend, prefill?: { date: string; timeSlots: string[] }) => void;
 }
 
 export default function HomeScreen({ currentUser, friends, playdates, navigate, onRequestPlaydate }: Props) {
@@ -15,7 +15,7 @@ export default function HomeScreen({ currentUser, friends, playdates, navigate, 
 
   const upcoming = playdates
     .filter((p) => p.status === 'confirmed' && p.date >= new Date().toISOString().split('T')[0])
-    .sort((a, b) => (a.date + a.timeSlot).localeCompare(b.date + b.timeSlot))
+    .sort((a, b) => (a.date + (a.timeSlots[0] ?? '')).localeCompare(b.date + (b.timeSlots[0] ?? '')))
     .slice(0, 3);
 
   const pendingCount = playdates.filter(
@@ -84,7 +84,10 @@ export default function HomeScreen({ currentUser, friends, playdates, navigate, 
                 key={i}
                 block={block}
                 currentUser={currentUser}
-                onRequest={(friend) => onRequestPlaydate(friend, { date: block.date, timeSlot: block.startSlot })}
+                onRequest={(friend) => {
+                  const slots = ALL_TIME_SLOTS.filter((s) => s >= block.startSlot && s < block.endSlot);
+                  onRequestPlaydate(friend, { date: block.date, timeSlots: slots });
+                }}
               />
             ))}
           </div>
@@ -118,7 +121,7 @@ export default function HomeScreen({ currentUser, friends, playdates, navigate, 
                 <div>
                   <p className="font-black text-gray-800">{otherName}</p>
                   <p className="text-xs text-gray-500 font-semibold">
-                    📆 {dateLabel} · {formatTime(pd.timeSlot)}
+                    📆 {dateLabel} · {pd.timeSlots.length === 1 ? formatTime(pd.timeSlots[0]) : formatSlotRange(pd.timeSlots)}
                   </p>
                 </div>
               </div>

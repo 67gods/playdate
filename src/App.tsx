@@ -20,7 +20,7 @@ export default function App() {
   const [friends, setFriends]                 = useState<Friend[]>([]);
   const [playdates, setPlaydates]             = useState<Playdate[]>([]);
   const [friendRequests, setFriendRequests]   = useState<FriendRequest[]>([]);
-  const [requestModal, setRequestModal]       = useState<{ friend: Friend; prefill?: { date: string; timeSlot: string } } | null>(null);
+  const [requestModal, setRequestModal]       = useState<{ friend: Friend; prefill?: { date: string; timeSlots: string[] } } | null>(null);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [dataLoading, setDataLoading]         = useState(false);
 
@@ -136,7 +136,7 @@ export default function App() {
   );
 
   const handleSendPlaydateRequest = useCallback(
-    async (data: { type: 'playdate' | 'meeting'; date: string; timeSlot: string; message: string }) => {
+    async (data: { type: 'playdate' | 'meeting'; date: string; timeSlots: string[]; message: string }) => {
       if (!requestModal) return;
       await apiFetch('/api/playdates', {
         method: 'POST',

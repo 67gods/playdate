@@ -1,5 +1,5 @@
 import type { Playdate, UserProfile } from '../types';
-import { formatTime } from '../constants';
+import { formatTime, formatSlotRange, slotDurationMinutes } from '../constants';
 
 interface Props {
   playdate: Playdate;
@@ -19,7 +19,9 @@ export default function PlaydateCard({ playdate, currentUser, onConfirm, onDecli
   const otherColor = isIncoming ? playdate.requesterColor : playdate.recipientColor;
   const otherEmoji = isIncoming ? playdate.requesterEmoji : playdate.recipientEmoji;
   const otherName = isIncoming ? playdate.requesterName : playdate.recipientName;
-  const timeLabel = formatTime(playdate.timeSlot);
+  const timeLabel = playdate.timeSlots.length === 1
+    ? formatTime(playdate.timeSlots[0])
+    : `${formatSlotRange(playdate.timeSlots)} (${slotDurationMinutes(playdate.timeSlots)}m)`;
 
   const dateLabel = new Date(playdate.date + 'T12:00:00').toLocaleDateString(undefined, {
     weekday: 'long',

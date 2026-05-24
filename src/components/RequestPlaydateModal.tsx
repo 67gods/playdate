@@ -1,12 +1,20 @@
 import { useState, useMemo } from 'react';
 import type { Friend, UserProfile } from '../types';
-import { ALL_TIME_SLOTS, DAY_START_HOUR, DAY_END_HOUR, formatTime, dateToDayKey } from '../constants';
+import {
+  ALL_TIME_SLOTS,
+  DAY_START_HOUR,
+  DAY_END_HOUR,
+  formatTime,
+  formatSlotRange,
+  slotDurationMinutes,
+  dateToDayKey,
+} from '../constants';
 
 interface Props {
   friend: Friend;
   currentUser: UserProfile;
-  prefill?: { date: string; timeSlot: string };
-  onSubmit: (data: { type: 'playdate' | 'meeting'; date: string; timeSlot: string; message: string }) => void;
+  prefill?: { date: string; timeSlots: string[] };
+  onSubmit: (data: { type: 'playdate' | 'meeting'; date: string; timeSlots: string[]; message: string }) => void;
   onClose: () => void;
 }
 
@@ -15,8 +23,19 @@ const HOURS = Array.from({ length: DAY_END_HOUR - DAY_START_HOUR }, (_, i) => DA
 export default function RequestPlaydateModal({ friend, currentUser, prefill, onSubmit, onClose }: Props) {
   const [type, setType] = useState<'playdate' | 'meeting'>('playdate');
   const [date, setDate] = useState(prefill?.date ?? '');
-  const [timeSlot, setTimeSlot] = useState(prefill?.timeSlot ?? '');
+  const [timeSlots, setTimeSlots] = useState<string[]>(prefill?.timeSlots ?? []);
   const [message, setMessage] = useState('');
+
+  const slotsSet = useMemo(() => new Set(timeSlots), [timeSlots]);
+
+  function toggleSlot(slot: string) {
+    setTimeSlots((prev) => {
+      const set = new Set(prev);
+      if (set.has(slot)) set.delete(slot);
+      else set.add(slot);
+      return [...set].sort();
+    });
+  }
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -86,7 +105,7 @@ export default function RequestPlaydateModal({ friend, currentUser, prefill, onS
               type="date"
               min={today}
               value={date}
-              onChange={(e) => { setDate(e.target.value); setTimeSlot(''); }}
+              onChange={(e) => { setDate(e.target.value); setTimeSlots([]); }}
               className="w-full border-2 border-gray-200 rounded-2xl px-4 py-3 font-bold text-gray-700 bg-white focus:outline-none focus:border-blue-400"
             />
           </label>
@@ -133,16 +152,16 @@ export default function RequestPlaydateModal({ friend, currentUser, prefill, onS
                       <div className="flex gap-1 flex-1">
                         {hourSlots.map((slot) => {
                           const { bg, opacity } = slotStyle(slot);
-                          const selected = timeSlot === slot;
+                          const selected = slotsSet.has(slot);
                           const [, mm] = slot.split(':');
                           return (
                             <button
                               key={slot}
-                              onClick={() => setTimeSlot(slot)}
+                              onClick={() => toggleSlot(slot)}
                               className={`flex-1 h-10 rounded-lg flex items-end justify-center pb-0.5 transition-all active:scale-95 ${
                                 selected ? 'ring-2 ring-offset-1 ring-gray-800 scale-105' : ''
                               }`}
-                              style={{ backgroundColor: bg, opacity }}
+                              style={{ backgroundColor: bg, opacity: selected ? 1 : opacity }}
                               title={`${formatTime(slot)} — ${slotStyle(slot).label}`}
                             >
                               <span className="text-[9px] font-black text-white/80">:{mm}</span>
@@ -155,10 +174,23 @@ export default function RequestPlaydateModal({ friend, currentUser, prefill, onS
                 })}
               </div>
 
-              {timeSlot && (
-                <p className="text-center font-black mt-2" style={{ color: friend.color }}>
-                  Selected: {formatTime(timeSlot)}
-                </p>
+              {timeSlots.length > 0 && (
+                <div className="text-center mt-2">
+                  <p className="font-black" style={{ color: friend.color }}>
+                    Selected: {formatSlotRange(timeSlots)}
+                  </p>
+                  <p className="text-xs text-gray-500 font-semibold mt-0.5">
+                    {slotDurationMinutes(timeSlots)} min · {timeSlots.length} slot{timeSlots.length > 1 ? 's' : ''}
+                    {timeSlots.length > 1 && (
+                      <button
+                        onClick={() => setTimeSlots([])}
+                        className="ml-2 underline text-gray-400 hover:text-gray-600"
+                      >
+                        clear
+                      </button>
+                    )}
+                  </p>
+                </div>
               )}
             </div>
           )}
@@ -176,8 +208,8 @@ export default function RequestPlaydateModal({ friend, currentUser, prefill, onS
           </label>
 
           <button
-            disabled={!date || !timeSlot}
-            onClick={() => onSubmit({ type, date, timeSlot, message })}
+            disabled={!date || timeSlots.length === 0}
+            onClick={() => onSubmit({ type, date, timeSlots, message })}
             className="w-full py-4 rounded-3xl font-black text-white text-lg shadow-lg active:scale-95 transition-transform disabled:opacity-40"
             style={{ backgroundColor: friend.color }}
           >

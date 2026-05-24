@@ -7,6 +7,7 @@ dist-ssr/
 
 # AWS SAM
 .aws-sam/
+server/latest-logs.json
 
 # Local env files
 .env
