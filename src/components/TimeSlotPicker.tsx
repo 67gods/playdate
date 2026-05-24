@@ -230,7 +230,7 @@ export default function TimeSlotPicker({
       </div>
 
       {/* ── Slot list ───────────────────────────────────────────── */}
-      <div className="overflow-y-auto max-h-[52vh] rounded-2xl border-2 border-gray-100 bg-white">
+      <div className="overflow-y-auto always-scroll max-h-[52vh] md:max-h-[65vh] rounded-2xl border-2 border-gray-100 bg-white">
         {hours.map(h => (
           <div key={h}>
             {/* Hour header */}

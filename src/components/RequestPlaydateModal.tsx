@@ -138,7 +138,7 @@ export default function RequestPlaydateModal({ friend, currentUser, prefill, onS
               </div>
 
               {/* Hour groups */}
-              <div className="max-h-52 overflow-y-auto bg-white rounded-2xl p-3 border-2 border-gray-100">
+              <div className="max-h-52 md:max-h-80 overflow-y-auto always-scroll bg-white rounded-2xl p-3 border-2 border-gray-100">
                 {HOURS.map((h) => {
                   const hourSlots = ALL_TIME_SLOTS.filter((s) => parseInt(s) === h);
                   const period    = h < 12 ? 'AM' : 'PM';

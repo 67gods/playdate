@@ -20,4 +20,30 @@ body {
   .safe-top {
     padding-top: env(safe-area-inset-top, 0px);
   }
+
+  /* Always-visible scrollbar on iOS/iPadOS WebKit (default hides until touched). */
+  .always-scroll {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;              /* Firefox */
+    scrollbar-color: rgba(0,0,0,0.35) rgba(0,0,0,0.05);
+  }
+  .always-scroll::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 10px;
+    height: 10px;
+  }
+  .always-scroll::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.05);
+    border-radius: 5px;
+  }
+  .always-scroll::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.35);
+    border-radius: 5px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  .always-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,0.55);
+    background-clip: content-box;
+  }
 }
