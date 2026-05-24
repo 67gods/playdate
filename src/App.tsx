@@ -192,7 +192,7 @@ export default function App() {
   if (!authUser) return <AuthScreen />;
 
   if (!authUser.username || !currentUser) {
-    return <SetupScreen onComplete={handleSetupComplete} />;
+    return <SetupScreen onComplete={handleSetupComplete} onSignOut={handleSignOut} />;
   }
 
   const screenProps = { currentUser, navigate: setScreen };
