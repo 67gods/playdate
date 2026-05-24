@@ -22,7 +22,7 @@ export default function AuthScreen() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    window.handleGoogleCredential = async ({ credential }) => {
+    const handleCredential = async ({ credential }: { credential: string }) => {
       setError('');
       setLoading(true);
       try {
@@ -32,6 +32,7 @@ export default function AuthScreen() {
         setLoading(false);
       }
     };
+    window.handleGoogleCredential = handleCredential;
 
     const script   = document.createElement('script');
     script.src     = 'https://accounts.google.com/gsi/client';
@@ -39,7 +40,7 @@ export default function AuthScreen() {
     script.onload  = () => {
       window.google?.accounts.id.initialize({
         client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
-        callback:  'handleGoogleCredential',
+        callback:  handleCredential,
       });
       const btn = document.getElementById('google-btn');
       if (btn) {
