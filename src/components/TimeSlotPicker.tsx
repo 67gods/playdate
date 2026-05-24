@@ -112,8 +112,23 @@ export default function TimeSlotPicker({
     onSaveDay?.(activeDay, []);
   }
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   function jumpTo(slot: string) {
-    document.getElementById(`ts-${slot}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const target    = document.getElementById(`ts-${slot}`);
+    const container = scrollRef.current;
+    if (!target || !container) return;
+    container.scrollTo({
+      top: target.offsetTop - container.offsetTop,
+      behavior: 'smooth',
+    });
+  }
+
+  function scrollBy(direction: 'up' | 'down') {
+    const c = scrollRef.current;
+    if (!c) return;
+    const step = c.clientHeight * 0.7;
+    c.scrollBy({ top: direction === 'up' ? -step : step, behavior: 'smooth' });
   }
 
   const sel         = new Set(localSlots);
@@ -230,7 +245,43 @@ export default function TimeSlotPicker({
       </div>
 
       {/* ── Slot list ───────────────────────────────────────────── */}
-      <div className="overflow-y-auto always-scroll max-h-[52vh] md:max-h-[65vh] rounded-2xl border-2 border-gray-100 bg-white">
+      <div
+        className="relative rounded-3xl bg-white shadow-sm"
+        style={{ border: `3px solid ${color}` }}
+      >
+        {/* Up arrow */}
+        <button
+          type="button"
+          onClick={() => scrollBy('up')}
+          aria-label="Scroll up"
+          className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 w-12 h-12 rounded-full text-white text-2xl font-black shadow-lg active:scale-90 transition-transform"
+          style={{ backgroundColor: color }}
+        >
+          ↑
+        </button>
+
+        {/* Down arrow */}
+        <button
+          type="button"
+          onClick={() => scrollBy('down')}
+          aria-label="Scroll down"
+          className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-20 w-12 h-12 rounded-full text-white text-2xl font-black shadow-lg active:scale-90 transition-transform"
+          style={{ backgroundColor: color }}
+        >
+          ↓
+        </button>
+
+        {/* Top fade hint */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-6 z-10 rounded-t-3xl"
+             style={{ background: 'linear-gradient(to bottom, rgba(255,255,255,0.95), transparent)' }} />
+        {/* Bottom fade hint */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 z-10 rounded-b-3xl"
+             style={{ background: 'linear-gradient(to top, rgba(255,255,255,0.95), transparent)' }} />
+
+        <div
+          ref={scrollRef}
+          className="overflow-y-auto always-scroll max-h-[52vh] md:max-h-[65vh] rounded-3xl"
+        >
         {hours.map(h => (
           <div key={h}>
             {/* Hour header */}
@@ -335,7 +386,12 @@ export default function TimeSlotPicker({
             })}
           </div>
         ))}
+        </div>
       </div>
+
+      <p className="text-center text-xs text-gray-400 font-bold mt-6">
+        ↑ Use arrows or swipe to see more times ↓
+      </p>
 
       {myRanges.length === 0 && !readonly && (
         <p className="text-center text-sm text-gray-400 font-semibold mt-3">

@@ -23,13 +23,11 @@ export default function AvailabilityScreen({ currentUser, onSaveDay }: Props) {
         </p>
       )}
 
-      <div className="bg-white rounded-3xl p-4 shadow-sm">
-        <TimeSlotPicker
-          availability={currentUser.availability}
-          color={currentUser.color}
-          onSaveDay={onSaveDay}
-        />
-      </div>
+      <TimeSlotPicker
+        availability={currentUser.availability}
+        color={currentUser.color}
+        onSaveDay={onSaveDay}
+      />
     </div>
   );
 }
