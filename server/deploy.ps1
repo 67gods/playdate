@@ -54,6 +54,7 @@ if (-not $SkipBuild) {
 
 Write-Host '==> sam deploy' -ForegroundColor Yellow
 sam deploy `
+  --no-confirm-changeset `
   --parameter-overrides `
     "MongoDbUri=$($envMap['MONGODB_URI'])" `
     "JwtSecret=$($envMap['JWT_SECRET'])" `
