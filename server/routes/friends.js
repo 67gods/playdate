@@ -123,4 +123,24 @@ router.post('/accept/:id', async (req, res) => {
   }
 });
 
+// DELETE /api/friends/:otherUserId
+// Removes the friendship in any state: cancel a sent request,
+// decline an incoming one, or unfriend an accepted friend.
+router.delete('/:otherUserId', async (req, res) => {
+  try {
+    const userId  = new mongoose.Types.ObjectId(req.user._id);
+    const otherId = new mongoose.Types.ObjectId(req.params.otherUserId);
+    const fs = await Friendship.findOneAndDelete({
+      $or: [
+        { fromUserId: userId, toUserId: otherId },
+        { fromUserId: otherId, toUserId: userId },
+      ],
+    });
+    if (!fs) return res.status(404).json({ error: 'Friendship not found' });
+    res.json({ ok: true });
+  } catch {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;

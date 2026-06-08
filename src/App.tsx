@@ -135,6 +135,14 @@ export default function App() {
     [refreshFriends]
   );
 
+  const handleRemoveFriendship = useCallback(
+    async (otherUid: string) => {
+      await apiFetch(`/api/friends/${otherUid}`, { method: 'DELETE' });
+      await refreshFriends();
+    },
+    [refreshFriends]
+  );
+
   const handleSendPlaydateRequest = useCallback(
     async (data: { type: 'playdate' | 'meeting'; date: string; timeSlots: string[]; message: string }) => {
       if (!requestModal) return;
@@ -226,6 +234,7 @@ export default function App() {
             onSearch={handleSearch}
             onSendFriendRequest={handleSendFriendRequest}
             onAcceptFriendRequest={handleAcceptFriendRequest}
+            onRemoveFriendship={handleRemoveFriendship}
             onRequestPlaydate={(friend) => setRequestModal({ friend })}
           />
         )}

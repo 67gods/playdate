@@ -10,6 +10,7 @@ interface Props {
   onSearch: (username: string) => Promise<UserProfile | null>;
   onSendFriendRequest: (toUser: UserProfile) => Promise<void>;
   onAcceptFriendRequest: (request: FriendRequest) => Promise<void>;
+  onRemoveFriendship: (otherUid: string) => Promise<void>;
   onRequestPlaydate: (friend: Friend) => void;
 }
 
@@ -20,6 +21,7 @@ export default function FriendsScreen({
   onSearch,
   onSendFriendRequest,
   onAcceptFriendRequest,
+  onRemoveFriendship,
   onRequestPlaydate,
 }: Props) {
   const [query, setQuery] = useState('');
@@ -29,6 +31,8 @@ export default function FriendsScreen({
   const [sentTo, setSentTo] = useState<Set<string>>(new Set());
   const [expandedFriend, setExpandedFriend] = useState<string | null>(null);
   const [detailView, setDetailView] = useState<'grid' | 'detail'>('grid');
+  const [removing, setRemoving] = useState<string | null>(null);
+  const [confirmingRemove, setConfirmingRemove] = useState<string | null>(null);
 
   async function handleSearch() {
     if (!query.trim()) return;
@@ -46,6 +50,21 @@ export default function FriendsScreen({
       setSentTo(prev => new Set(prev).add(user.uid));
     } finally {
       setSendingTo(null);
+    }
+  }
+
+  async function handleRemove(otherUid: string) {
+    setRemoving(otherUid);
+    try {
+      await onRemoveFriendship(otherUid);
+      setSentTo(prev => {
+        const next = new Set(prev);
+        next.delete(otherUid);
+        return next;
+      });
+      setConfirmingRemove(null);
+    } finally {
+      setRemoving(null);
     }
   }
 
@@ -107,7 +126,16 @@ export default function FriendsScreen({
             ) : friends.some((f) => f.uid === searchResult.uid) ? (
               <span className="text-green-600 font-bold text-sm">✅ Friends</span>
             ) : sentTo.has(searchResult.uid) || outgoingRequestUids.has(searchResult.uid) ? (
-              <span className="text-green-600 font-bold text-sm">✅ Sent!</span>
+              <div className="flex items-center gap-2">
+                <span className="text-green-600 font-bold text-sm">✅ Sent!</span>
+                <button
+                  onClick={() => handleRemove(searchResult.uid)}
+                  disabled={removing === searchResult.uid}
+                  className="px-3 py-2 rounded-2xl font-black text-gray-500 bg-gray-100 text-sm active:scale-95 transition-transform disabled:opacity-60"
+                >
+                  {removing === searchResult.uid ? '⏳' : '✕ Cancel'}
+                </button>
+              </div>
             ) : (
               <button
                 onClick={() => handleAddFriend(searchResult as UserProfile)}
@@ -144,6 +172,13 @@ export default function FriendsScreen({
                 <p className="font-black text-gray-800">{req.fromDisplayName}</p>
                 <p className="text-gray-500 text-sm font-semibold">@{req.fromUsername}</p>
               </div>
+              <button
+                onClick={() => handleRemove(req.fromUid)}
+                disabled={removing === req.fromUid}
+                className="px-3 py-2 rounded-2xl font-black text-gray-500 bg-gray-100 text-sm active:scale-95 transition-transform disabled:opacity-60"
+              >
+                {removing === req.fromUid ? '⏳' : 'Decline'}
+              </button>
               <button
                 onClick={() => onAcceptFriendRequest(req)}
                 className="px-4 py-2 rounded-2xl font-black text-white text-sm active:scale-95 transition-transform"
@@ -240,6 +275,32 @@ export default function FriendsScreen({
                   >
                     🎉 Request Playdate!
                   </button>
+
+                  {confirmingRemove === friend.uid ? (
+                    <div className="mt-2 flex items-center justify-center gap-2 text-sm">
+                      <span className="font-bold text-gray-500">Remove @{friend.username}?</span>
+                      <button
+                        onClick={() => handleRemove(friend.uid)}
+                        disabled={removing === friend.uid}
+                        className="px-3 py-1.5 rounded-2xl font-black text-white bg-red-400 active:scale-95 transition-transform disabled:opacity-60"
+                      >
+                        {removing === friend.uid ? '⏳' : 'Yes'}
+                      </button>
+                      <button
+                        onClick={() => setConfirmingRemove(null)}
+                        className="px-3 py-1.5 rounded-2xl font-black text-gray-500 bg-gray-100 active:scale-95 transition-transform"
+                      >
+                        No
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setConfirmingRemove(friend.uid)}
+                      className="mt-2 w-full py-2 rounded-2xl font-bold text-red-400 text-sm active:scale-95 transition-transform"
+                    >
+                      Remove friend
+                    </button>
+                  )}
                 </div>
               )}
             </div>
