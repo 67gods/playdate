@@ -9,13 +9,13 @@ interface Props {
 }
 
 export default function RequestSleepoverModal({ friend, currentUser, onSubmit, onClose }: Props) {
-  const [host, setHost]               = useState<'me' | 'them'>('me');
-  const [date, setDate]               = useState('');
-  const [dropOffTime, setDropOffTime] = useState('');
-  const [pickUpTime, setPickUpTime]   = useState('');
-  const [message, setMessage]         = useState('');
-
   const today = new Date().toISOString().split('T')[0];
+
+  const [host, setHost]               = useState<'me' | 'them'>('me');
+  const [date, setDate]               = useState(today);       // default: tonight
+  const [dropOffTime, setDropOffTime] = useState('19:00');     // default: 7:00 PM
+  const [pickUpTime, setPickUpTime]   = useState('10:00');     // default: 10:00 AM
+  const [message, setMessage]         = useState('');
   const canSubmit = !!date && !!dropOffTime && !!pickUpTime;
 
   return (
