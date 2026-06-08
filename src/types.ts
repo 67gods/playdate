@@ -1,6 +1,7 @@
 export type Day = 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun';
 export type PlaydateStatus = 'pending' | 'confirmed' | 'declined';
-export type Screen = 'home' | 'availability' | 'friends' | 'requests';
+export type SleepoverStatus = 'pending' | 'confirmed' | 'declined' | 'cancelled';
+export type Screen = 'home' | 'availability' | 'friends' | 'requests' | 'sleepovers';
 
 // availability: per-day array of available "HH:MM" 24-hour strings
 export interface UserProfile {
@@ -43,6 +44,28 @@ export interface FriendRequest {
   toUid: string;
   toUsername: string;
   status: 'pending' | 'accepted';
+  createdAt: number;
+}
+
+export interface Sleepover {
+  id: string;
+  requesterId: string;
+  recipientId: string;
+  requesterName: string;
+  requesterColor: string;
+  requesterEmoji: string;
+  recipientName: string;
+  recipientColor: string;
+  recipientEmoji: string;
+  date: string;        // YYYY-MM-DD (the night)
+  dropOffTime: string; // HH:MM, evening
+  pickUpTime: string;  // HH:MM, next morning
+  hostId: string;      // requesterId or recipientId
+  status: SleepoverStatus;
+  cancelledBy: string | null;
+  parentApprovalNeeded: boolean;
+  parentApproved: boolean;
+  message: string;
   createdAt: number;
 }
 

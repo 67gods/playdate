@@ -20,6 +20,7 @@ const authRouter      = require('./routes/auth');
 const usersRouter     = require('./routes/users');
 const friendsRouter   = require('./routes/friends');
 const playdatesRouter = require('./routes/playdates');
+const sleepoversRouter = require('./routes/sleepovers');
 
 const app    = express();
 const isProd = process.env.NODE_ENV === 'production';
@@ -56,6 +57,7 @@ app.get('/api/health', async (_req, res) => {
 app.use('/api/users',     requireAuth, usersRouter);
 app.use('/api/friends',   requireAuth, friendsRouter);
 app.use('/api/playdates', requireAuth, playdatesRouter);
+app.use('/api/sleepovers', requireAuth, sleepoversRouter);
 
 app.use(errorHandler);
 

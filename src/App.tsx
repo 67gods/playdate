@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from './context/AuthContext';
 import { apiFetch } from './lib/api';
-import type { Day, Friend, FriendRequest, Playdate, Screen, UserProfile } from './types';
+import type { Day, Friend, FriendRequest, Playdate, Screen, Sleepover, UserProfile } from './types';
 import AuthScreen from './screens/AuthScreen';
 import Layout from './components/Layout';
 import SetupScreen from './screens/SetupScreen';
@@ -9,7 +9,9 @@ import HomeScreen from './screens/HomeScreen';
 import AvailabilityScreen from './screens/AvailabilityScreen';
 import FriendsScreen from './screens/FriendsScreen';
 import RequestsScreen from './screens/RequestsScreen';
+import SleepoversScreen from './screens/SleepoversScreen';
 import RequestPlaydateModal from './components/RequestPlaydateModal';
+import RequestSleepoverModal from './components/RequestSleepoverModal';
 import ProfileEditModal from './components/ProfileEditModal';
 
 export default function App() {
@@ -19,8 +21,10 @@ export default function App() {
   const [screen, setScreen]                   = useState<Screen>('home');
   const [friends, setFriends]                 = useState<Friend[]>([]);
   const [playdates, setPlaydates]             = useState<Playdate[]>([]);
+  const [sleepovers, setSleepovers]           = useState<Sleepover[]>([]);
   const [friendRequests, setFriendRequests]   = useState<FriendRequest[]>([]);
   const [requestModal, setRequestModal]       = useState<{ friend: Friend; prefill?: { date: string; timeSlots: string[] } } | null>(null);
+  const [sleepoverModal, setSleepoverModal]   = useState<{ friend: Friend } | null>(null);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [dataLoading, setDataLoading]         = useState(false);
 
@@ -29,6 +33,7 @@ export default function App() {
       setCurrentUser(null);
       setFriends([]);
       setPlaydates([]);
+      setSleepovers([]);
       setFriendRequests([]);
       return;
     }
@@ -48,11 +53,13 @@ export default function App() {
       apiFetch<Friend[]>('/api/friends'),
       apiFetch<Playdate[]>('/api/playdates'),
       apiFetch<FriendRequest[]>('/api/friends/requests'),
+      apiFetch<Sleepover[]>('/api/sleepovers'),
     ])
-      .then(([f, p, fr]) => {
+      .then(([f, p, fr, so]) => {
         setFriends(f);
         setPlaydates(p);
         setFriendRequests(fr);
+        setSleepovers(so);
       })
       .catch(console.error)
       .finally(() => setDataLoading(false));
@@ -70,6 +77,11 @@ export default function App() {
   const refreshPlaydates = useCallback(async () => {
     const p = await apiFetch<Playdate[]>('/api/playdates');
     setPlaydates(p);
+  }, []);
+
+  const refreshSleepovers = useCallback(async () => {
+    const so = await apiFetch<Sleepover[]>('/api/sleepovers');
+    setSleepovers(so);
   }, []);
 
   const handleSetupComplete = useCallback(
@@ -172,6 +184,43 @@ export default function App() {
     [refreshPlaydates]
   );
 
+  const handleCreateSleepover = useCallback(
+    async (data: { host: 'me' | 'them'; date: string; dropOffTime: string; pickUpTime: string; message: string }) => {
+      if (!sleepoverModal) return;
+      await apiFetch('/api/sleepovers', {
+        method: 'POST',
+        body: JSON.stringify({ recipientId: sleepoverModal.friend.uid, ...data }),
+      });
+      setSleepoverModal(null);
+      await refreshSleepovers();
+    },
+    [sleepoverModal, refreshSleepovers]
+  );
+
+  const handleConfirmSleepover = useCallback(
+    async (id: string) => {
+      await apiFetch(`/api/sleepovers/${id}/confirm`, { method: 'POST' });
+      await refreshSleepovers();
+    },
+    [refreshSleepovers]
+  );
+
+  const handleDeclineSleepover = useCallback(
+    async (id: string) => {
+      await apiFetch(`/api/sleepovers/${id}/decline`, { method: 'POST' });
+      await refreshSleepovers();
+    },
+    [refreshSleepovers]
+  );
+
+  const handleCancelSleepover = useCallback(
+    async (id: string) => {
+      await apiFetch(`/api/sleepovers/${id}/cancel`, { method: 'POST' });
+      await refreshSleepovers();
+    },
+    [refreshSleepovers]
+  );
+
   const handleSignOut = useCallback(async () => {
     await logout();
     setEditProfileOpen(false);
@@ -185,6 +234,10 @@ export default function App() {
   const incomingFriendReqs = friendRequests.filter(
     (r) => r.toUid === authUser?.uid && r.status === 'pending'
   );
+
+  const pendingIncomingSleepovers = sleepovers.filter(
+    (s) => s.recipientId === authUser?.uid && s.status === 'pending'
+  ).length;
 
   if (authLoading || dataLoading) {
     return (
@@ -213,6 +266,7 @@ export default function App() {
         navigate={setScreen}
         badgeCount={pendingIncoming}
         friendsBadgeCount={incomingFriendReqs.length}
+        sleepoversBadgeCount={pendingIncomingSleepovers}
         onEditProfile={() => setEditProfileOpen(true)}
       >
         {screen === 'home' && (
@@ -246,6 +300,17 @@ export default function App() {
             onDecline={handleDeclinePlaydate}
           />
         )}
+        {screen === 'sleepovers' && (
+          <SleepoversScreen
+            {...screenProps}
+            sleepovers={sleepovers}
+            friends={friends}
+            onConfirm={handleConfirmSleepover}
+            onDecline={handleDeclineSleepover}
+            onCancel={handleCancelSleepover}
+            onRequestSleepover={(friend) => setSleepoverModal({ friend })}
+          />
+        )}
       </Layout>
 
       {requestModal && (
@@ -255,6 +320,15 @@ export default function App() {
           prefill={requestModal.prefill}
           onSubmit={handleSendPlaydateRequest}
           onClose={() => setRequestModal(null)}
+        />
+      )}
+
+      {sleepoverModal && (
+        <RequestSleepoverModal
+          friend={sleepoverModal.friend}
+          currentUser={currentUser}
+          onSubmit={handleCreateSleepover}
+          onClose={() => setSleepoverModal(null)}
         />
       )}
 

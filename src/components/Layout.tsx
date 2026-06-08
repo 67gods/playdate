@@ -7,6 +7,7 @@ interface Props {
   children: React.ReactNode;
   badgeCount?: number;
   friendsBadgeCount?: number;
+  sleepoversBadgeCount?: number;
   onEditProfile: () => void;
 }
 
@@ -15,9 +16,10 @@ const TABS: { screen: Screen; icon: string; label: string }[] = [
   { screen: 'availability', icon: '📅', label: 'My Time' },
   { screen: 'friends', icon: '👥', label: 'Friends' },
   { screen: 'requests', icon: '📬', label: 'Requests' },
+  { screen: 'sleepovers', icon: '🛌', label: 'Sleepovers' },
 ];
 
-export default function Layout({ currentUser, screen, navigate, children, badgeCount, friendsBadgeCount, onEditProfile }: Props) {
+export default function Layout({ currentUser, screen, navigate, children, badgeCount, friendsBadgeCount, sleepoversBadgeCount, onEditProfile }: Props) {
   return (
     <div className="flex flex-col h-full max-w-md mx-auto">
       {/* Top bar — tap to edit profile */}
@@ -45,8 +47,9 @@ export default function Layout({ currentUser, screen, navigate, children, badgeC
           {TABS.map((tab) => {
             const active = screen === tab.screen;
             const tabBadge =
-              tab.screen === 'requests' ? (badgeCount ?? 0) :
-              tab.screen === 'friends'  ? (friendsBadgeCount ?? 0) : 0;
+              tab.screen === 'requests'   ? (badgeCount ?? 0) :
+              tab.screen === 'friends'    ? (friendsBadgeCount ?? 0) :
+              tab.screen === 'sleepovers' ? (sleepoversBadgeCount ?? 0) : 0;
             return (
               <button
                 key={tab.screen}
